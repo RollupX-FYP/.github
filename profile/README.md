@@ -1,222 +1,202 @@
-# GoTogether - Intelligent Travel Companion for Sri Lanka
+# Improving Blockchain Scalability: Throughput Enhancement in ZK-Rollups
 
-[![Backend Deploy](https://github.com/GoTogetherOrganization/GoTogether-backend/actions/workflows/deploy.yml/badge.svg)](https://github.com/GoTogetherOrganization/GoTogether-backend/actions/workflows/deploy.yml)
-[![Frontend Deploy (Vercel)](https://github.com/GoTogetherOrganization/GoTogether-web/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/GoTogetherOrganization/GoTogether-web/actions/workflows/deploy-vercel.yml)
+**University of Moratuwa**  
+**Faculty of Engineering**  
+**Department of Computer Science and Engineering**
 
-## Overview
+**Module No:** CS4203  
+**Project Proposal Submission:** September 23, 2025
 
-GoTogether is a smart, AI-driven travel management platform tailored for both local and foreign travelers in Sri Lanka. Designed with modularity, scalability, and real-time intelligence at its core, it offers seamless web and mobile interfaces, dynamic itinerary generation, transportation data integration, and social features that collectively redefine how people explore the island.
+## Team Members - Group "Rollup"
 
-### Problem Statement
+- **Fernando T.H.L** (210167E)
+- **Gamage M.S** (210176F)
+- **Lishan S.D** (210339J)
+- **Perera M.V.D.P.D.S** (210466U)
 
-Tourists visiting Sri Lanka frequently encounter significant challenges including language barriers, inefficient route planning, and lack of accessible transportation information. These difficulties result in wasted time, increased travel costs, and suboptimal travel experiences. Similarly, Sri Lankan travelers face comparable obstacles due to the absence of optimized trip planning tools tailored to local conditions. The current travel landscape is characterized by fragmented information sources, manual planning processes, and limited access to real-time transportation data, creating a clear need for an integrated, intelligent travel solution.
+**Supervisor:** Dr. Sunimal Rathnayake
 
-### Target Users
+---
 
-GoTogether is designed to serve two primary user segments:
+## 1. Introduction
 
-- **Foreign Travelers:** International tourists visiting Sri Lanka who require comprehensive travel guidance, cultural context, and language support to navigate the country effectively and safely.
-- **Local Travelers:** Sri Lankan residents seeking efficient trip planning, optimized routes, and access to comprehensive transportation information for domestic travel within the country.
+Blockchain technology has emerged as a transformative innovation, attracting attention from academia, industry, and governments alike. It provides a secure, distributed ledger that enables trust among untrusted entities without relying on centralized authorities or intermediaries. Its defining properties, including immutability, transparency, auditability, autonomy, and resilience, position blockchain as one of the most disruptive digital technologies of the past decade.
 
-## Key Features
+Initially conceived as the foundation of Bitcoin, blockchain’s applications have rapidly expanded beyond cryptocurrencies. Ethereum introduced programmability through smart contracts, enabling decentralized applications (DApps) that support diverse use cases. Today, blockchain is being deployed in finance, insurance, supply chain management, healthcare, identity management, registry services, stock trading, the Internet of Things (IoT), and energy systems.
 
-The application delivers six core functionalities designed to address specific travel pain points:
+Among the challenges brought by the surge in adoption, **scalability** remains the most critical barrier. The inherent limitation in the number of transactions these networks can process per second has prompted efforts within the blockchain community to develop a wide range of innovative solutions.
 
-- **Personalized Tour Planning:** Enables users to create customized itineraries by selecting starting points and destinations, with intelligent route optimization and personalized recommendations.
-- **Transport Details:** Provides comprehensive information about available transportation options between destinations, including schedules, fares, and real-time availability.
-- **Travel Guidance:** Offers curated recommendations for cultural sites, entertainment venues, and hidden attractions, enhancing the discovery aspect of travel.
-- **Trip Review & Travel Feed:** Creates a social platform where users can share trip plans, engage through comments and reactions, and follow other travelers for inspiration and insights.
-- **Emergency Support:** Ensures traveler safety by providing quick access to essential services including hospitals and police stations during emergencies.
-- **Food/Stay Suggestions:** Delivers location-based recommendations for accommodations and restaurants tailored to specific travel destinations and user preferences.
+### 1.1 Motivation
 
-## High-Level Architecture
+Public blockchains are constrained by the “scalability trilemma”: decentralization, security, and scalability cannot be maximized simultaneously. Ethereum, one of the most prominent public blockchains, exemplifies this trade-off. Ethereum has deliberately optimized for decentralization and security—now under Proof-of-Stake—at the cost of base-layer throughput. In practice, Ethereum L1 capacity remains modest at roughly 15–25 TPS. When demand spikes, finite blockspace leads to congestion and fee volatility.
 
-GoTogether adopts a multi-layered microservice architecture, optimized for cloud-native deployment and real-time responsiveness. It includes the following architectural domains:
+To scale without compromising Ethereum’s security guarantees, the ecosystem has converged on **Layer-2 (L2) rollups**. Rollups execute transactions off-chain and post succinct data/proofs to Ethereum, thereby inheriting L1 security while reducing L1 computation and bandwidth. Within this family, **ZK-Rollups** offer cryptographic validity proofs that enable faster finality than optimistic rollups.
 
-![High-Level Architecture](../diagrams/High%20level%20architecture.png)
+Yet a gap persists between ZK-Rollups’ theoretical scalability and their observed, end-to-end performance. Prior studies surface key constraints (e.g., proof generation time) but stop short of a comprehensive, reproducible analysis of which tuning levers—batch size/frequency, sequencer scheduling, and data-availability (DA) compression—most effectively shift the throughput–latency–cost frontier in real deployments.
 
-### Key Components
+By running controlled, reproducible experiments, we aim to identify the true bottlenecks (e.g., proving) and produce practical tuning guidance for the ecosystem. We will implement a simple, educational proof-of-concept (PoC) ZK-rollup rather than a fully EVM-compatible system. The novel contribution of this work is the creation of an open-source, modular framework specifically designed for controlled, empirical analysis of ZK-Rollup performance trade-offs.
 
-- **Frontend**
-  - Web App: Built with Next.js using both SSR and CSR rendering models. Token storage uses secure cookies, with route guards protecting user-only routes.
-  - Mobile App: Built with React Native and Expo, ensuring shared logic, adaptive theming, and cross-platform delivery.
-- **Backend**
-  - Composed of Dockerized microservices using Spring Boot and Go.
-- **API Gateway**
-  - Kong Gateway handles all inbound traffic (routing, rate limiting, service discovery, delegated authentication).
-- **Authentication & Authorization**
-  - Keycloak handles user management, token issuance, and session control.
-  - Uses pre-configured realm/clients auto-imported via startup scripts.
-  - HTTPS enforced via NGINX + Certbot with DuckDNS domain for backend.
-- **Database**
-  - Supabase PostgreSQL stores persistent data.
-- **Image CDN**
-  - Cloudflare Images stores and serves user-uploaded media.
-- **DevOps & CI/CD**
-  - GitHub Actions with custom deploy.sh script:
-  - Multi-stage Docker builds optimized via .dockerignore
-  - Local JAR builds to improve speed
-  - Auto-deploy to Oracle Cloud VM
-  - Oracle Free Tier used for backend VM hosting (replaced EC2 due to resource limits).
-  - Vercel used for frontend auto-deploy.
-- **Communication**
-  - Internal services communicate via REST and gRPC.
-- **Reverse Proxy**
-  - NGINX enforces HTTPS, redirects, and fallback proxying.
-  - Certbot + DuckDNS ensures SSL with free domain.
+### 1.2 Background
 
-## Web Frontend Design
+#### 1.2.1 Blockchain Technology and Scalability Challenges
 
-The web frontend is developed using Next.js, offering a modern, fast, and SEO-friendly user experience. It leverages a hybrid rendering strategy (SSR + CSR) and built-in features for performance and accessibility.
+Blockchain technology underpins decentralized systems, enabling secure, transparent, and tamper-resistant transaction processing. However, scalability refers to the ability of a blockchain network to efficiently process increasing volumes of transactions without undermining security and decentralization. Traditional blockchains achieve high security but suffer from low throughput.
 
-### Key Features
+#### 1.2.2 Scalability of Ethereum
 
-- **Responsive Design:** Ensures seamless interaction across mobile, tablet, and desktop devices.
-- **Dark Mode Support:** Built-in toggle for light and dark themes.
-- **SSR + CSR Performance:** Uses Server-Side Rendering (SSR) for fast initial loads and Client-Side Rendering (CSR) for dynamic interactions.
-- **Skeleton Screens:** Displays placeholders during content fetch.
-- **Image Optimization:** Utilizes Next.js Image component for automatic image resizing, lazy loading, and CDN delivery.
+Ethereum processes approximately 15–25 TPS under typical conditions. Two primary strategies have emerged to address this:
 
-## Mobile Frontend Design
+1.  **Base-layer (L1) scaling:** e.g., Sharding (complex).
+2.  **Layer-2 (L2) scaling:** Rollups have emerged as the preferred mechanism.
+    - **Optimistic Rollups:** Assume validity, fraud proofs.
+    - **ZK-Rollups:** Validity proofs, immediate verification.
 
-The mobile experience is built using React Native, enabling cross-platform development and consistent logic sharing with the web app.
+#### 1.2.3 The Blockchain Trilemma
 
-### Highlights
+The blockchain trilemma asserts that no blockchain can fully optimize **security, scalability, and decentralization** simultaneously; systems typically achieve two at the expense of the third.
 
-- **Platform-Native Experience:** Delivers smooth interactions and UI responsiveness aligned with both iOS and Android guidelines.
-- **Shared Logic with Web:** Core logic, models, and API services are shared with the Next.js frontend.
-- **Responsive Theming:** Adaptive UI scaling, and intuitive mobile gestures.
+#### 1.2.4 Cryptographic Primitives
 
-## Backend Design
+- **Merkle Trees:** Efficient data verification and synchronization.
+- **Zero-Knowledge Proofs (ZKPs):** Prove a statement is true without revealing information.
+- **zk-SNARKs:** Succinct Non-Interactive Arguments of Knowledge. Efficient, small proofs, often require trusted setup.
+- **zk-STARKs:** Scalable Transparent ARguments of Knowledge. No trusted setup, larger proofs, post-quantum secure.
 
-### Microservices
+#### 1.2.5 Data Availability
 
-Deployed via containers in Docker Compose:
+Ensures all necessary data for verifying state transitions is accessible. Mechanisms include On-chain DA (calldata, EIP-4844 blobs) and Off-chain DA (DACs, Celestia).
 
-- **api-service (Go + Gin):**
-- Interfaces with Google Maps API, geocoding, directions, and LLM query generation via Gemini.
-- Implements error recovery, rate limiting, and caching middleware.
-- **planning-service (Spring Boot):**
-- Generates AI-personalized itineraries using user trip history and current context.
-- Supports collaborative editing, trip participation logic.
-- **social-media-service (Spring Boot):**
-- Manages posts, comments, reactions, and user feed.
-- Offers paginated REST APIs.
-- **auth-service (Keycloak):**
-- Handles authentication, registration, and session/token management.
-- **user-service (Spring Boot):**
-- Manages profile data, follows/unfollows, and user metadata.
-- Secure integration with Keycloak for user identity sync.
+### 1.3 Problem Statement
 
-### Storage
+Ethereum faces significant scalability limitations (approx. 15–25 TPS), leading to congestion and high fees. ZK-rollups are a promising L2 solution but real-world deployments reveal bottlenecks:
 
-- **Supabase PostgreSQL:** Used for structured storage (users, trips, social metadata, relationships).
-- **Cloudflare Images:** Optimized image CDN for storing and delivering profile pictures, post media, etc.
+- Computationally intensive proof generation.
+- Inefficient sequencer scheduling.
+- High Data Availability (DA) costs.
 
-## Database Design
+This project addresses these gaps by implementing and empirically evaluating a modular ZK-Rollup prototype on the Ethereum testnet (e.g., Sepolia). We focus on benchmarking baseline metrics and exploring targeted optimizations like dynamic batch sizing, advanced sequencer policies, and DA compression strategies.
 
-The application utilizes **Supabase PostgreSQL** for persistent data storage, managing users, trips, social metadata, and preferences.
+### 1.4 Research Questions
 
-![ER Diagram](../diagrams/er%20diagram.jpg)
+- **RQ1:** What is the quantitative impact of batch size on the throughput (TPS), proof generation latency, and per-transaction cost of a ZK-Rollup?
+- **RQ2:** How do different sequencer scheduling policies (e.g., FIFO vs. priority fee) affect transaction confirmation times, particularly for high-value transactions under network congestion?
+- **RQ3:** What are the cost and throughput implications of using different data availability mechanisms, specifically comparing on-chain calldata with EIP-4844 blobs?
 
-## Security and Privacy Design
+### 1.5 Research Objectives
 
-### Authentication and Authorization
+1.  **Develop a modular ZK-Rollup prototype framework** deployable on the Ethereum testnet.
+2.  **Benchmark baseline performance metrics** (throughput, latency, gas costs, storage) against Ethereum L1.
+3.  **Investigate throughput improvement strategies** through controlled experiments:
+    - Batch size and frequency tuning.
+    - Sequencer scheduling policies.
+    - Data availability compression techniques (EIP-4844).
 
-- **OAuth2.0 + OpenID Connect (OIDC):** Implemented via Keycloak for secure login and token-based session management.
-- **JWT Access Tokens:** APIs are protected using signed JSON Web Tokens.
+### 1.6 Research Outcomes
 
-### Secure Communication Channels
+- A fully functional, modular ZK-Rollup prototype framework.
+- Comprehensive benchmarking datasets and scripts.
+- Empirical insights from optimization experiments (quantitative trade-off analyses).
+- A detailed technical report/thesis.
+- Open-source artifacts (codebase, experiment harnesses, notebooks).
 
-- **HTTPS Everywhere:** All public endpoints are secured using TLS.
-- **WSS (WebSocket Secure):** Real-time communication uses encrypted WebSocket channels.
-- **Reverse Proxy Security:** All traffic is routed through an NGINX-based proxy.
+---
 
-### Data Privacy and Protection
+## 2. Literature Review
 
-- **Email Verification:** Custom wait scripts ensure service boot sequence integrity (e.g., user-service waits for Keycloak).
+### Executive Summary
 
-## Key Architectural Strengths
+Ethereum’s limited throughput has driven the rise of L2 solutions, with ZK-Rollups being promising due to validity proofs. Challenges include sequencer centralization, DA costs, and proof generation bottlenecks. Existing systems are too complex for controlled experimentation. This project fills the gap with a minimal, modular prototype for reproducible benchmarking.
 
-- **Service Readiness:** All public endpoints are secured using TLS.
-- **Incremental Deployments:** Devs can spin up only required services via CLI flags in deploy.sh.
-- **API Resilience:** Graceful error handling, fallback logic for external APIs, offline-tolerant design.
-- **Infrastructure as Codes:** Environment consistency ensured across developers using Docker, GitHub Actions, and automated Keycloak realm imports.
-- **Localization Ready:** Future-proofed for Sinhala, Tamil, and English UI and LLM translation.
+### Key Insights
 
-## Technology Stack
+- **Sequencer:** Policies (FCFS, Priority) affect fairness and latency. Batching trade-offs exist between cost and latency.
+- **Data Availability:** Evolving from expensive calldata to EIP-4844 blobs and off-chain solutions (DACs, Celestia).
+- **Proving:** A major bottleneck. Metrics like simple TPS are inadequate; true scalability depends on transaction complexity.
 
-<p align="left">
-  <a href="https://nextjs.org/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/nextjs-icon.png" alt="Next.js" width="40" height="40"/>
-  </a>
-  <a href="https://reactnative.dev/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/React.webp" alt="React Native" width="40" height="40"/>
-  </a>
-  <a href="https://go.dev/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/Go_Logo_Blue.svg.png" alt="Go" width="40" height="40"/>
-  </a>
-  <a href="https://spring.io/projects/spring-boot" target="_blank" rel="noreferrer">
-    <img src="../diagrams/springboot.png" alt="Spring Boot" width="40" height="40"/>
-  </a>
-  <a href="https://konghq.com/kong" target="_blank" rel="noreferrer">
-    <img src="../diagrams/kong-icon-icon-lg.png" alt="Kong" width="40" height="40"/>
-  </a>
-  <a href="https://www.postgresql.org/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/Postgresql_elephant.svg.png" alt="PostgreSQL" width="40" height="40"/>
-  </a>
-  <a href="https://www.cloudflare.com/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/Cloudflare_Logo.png" alt="Cloudflare" width="40" height="40"/>
-  </a>
-  <a href="https://vercel.com/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/vercel-logo.png" alt="Vercel" width="40" height="40"/>
-  </a>
-  <a href="https://www.nginx.com/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/nginx-icon-223x256-ghqr4o29.png" alt="NGINX" width="40" height="40"/>
-  </a>
-  <a href="https://gemini.google.com/" target="_blank" rel="noreferrer">
-    <img src="../diagrams/Google_Gemini_logo.svg.png" alt="Gemini" width="40" height="40"/>
-  </a>
-</p>
+### Gaps
 
-### Frontend Technologies
+- Limited end-to-end empirical evaluations.
+- Lack of controlled studies on interaction of batch size, scheduling, and DA.
+- Insufficient fine-grained cost breakdowns.
 
-- **Web Frontend:** Next.js (React)
-- **Mobile App:** React Native
-- **Styling:** Tailwind CSS
-- **UI Features:** Dark Mode, Skeleton Views
+---
 
-### Backend Technologies
+## 3. Proposed Method
 
-- **API Services:** Go, Spring Boot
-- **Authentication:** Keycloak
-- **User Service:** Spring Boot
-- **Planning Service:** Spring Boot
-- **Social Media Service:** Spring Boot
-- **Notification Service:** Spring Boot (WebSocket + email alerts)
+We will design, implement, and benchmark a modular ZK-Rollup framework on an Ethereum testnet.
 
-### Database
+### 3.1 Prototype Design
 
-- **Relational DB:** Supabase PostgreSQL
-- **Media Storage:** Cloudflare Images
+**System Architecture Layers:**
 
-### Cloud Infrastructure
+1.  **User Layer:** Wallets, Synthetic Workload Generator.
+2.  **Off-Chain Components:**
+    - **Sequencer:** Transaction pool, Batching engine, Scheduler.
+    - **Executor:** State Manager (Sparse Merkle Tree), State Transition Engine.
+    - **Prover:** Circuit Backend (Circom+Groth16/Plonk), Proof Generator.
+    - **Submitter:** Batch Packager, On-chain Broadcaster, DA Connector.
+3.  **On-Chain Components:** `RollupBridge.sol` (State roots, Deposits/Withdrawals), `Verifier.sol` (ZK proof verification).
+4.  **Data Availability Layer:** Mode A (Calldata), Mode B (Compressed), Mode C (Off-chain/IPFS).
 
-- **Frontend Hosting:** Vercel (Serverless)
-- **Backend Hosting:** Oracle Cloud VM + Docker Compose
-- **Database Hosting:** Supabase (Serverless)
-- **Image Delivery:** Cloudflare Images CDN
+### 3.2 Experimental Design
 
-### DevOps and CI/CD Tools
+**Objectives:**
 
-- **CI Pipeline:** GitHub Actions
-- **Orchestration & Deployment:** Docker Compose
-- **Containerization:** Docker
-- **Reverse Proxy (local/fallback):** Certbot + NGINX
+- Evaluate sequencer parameters (batch size, frequency).
+- Assess executor performance.
+- Investigate DA strategies.
+- Compare proof system backends.
 
-## Deployment
+**Variables:**
 
-- **Frontend:** Deployed on Vercel (Serverless).
-- **Backend:** Microservices are containerized using Docker and orchestrated with Docker Compose on an Oracle Cloud VM.
-- **Database:** Hosted on Supabase (Serverless).
-- **Image CDN:** Cloudflare Images.
+- **Independent:** Batch size, Batch frequency, Sequencer policy, DA mode, Proof system.
+- **Dependent:** Throughput (TPS), Latency, Gas cost, Proof generation time, Verification time.
+
+**Procedure:**
+
+1.  **Setup:** Deploy on Sepolia and Local testnet (Hardhat). Establish L1 baseline.
+2.  **Controlled Experiments:** Vary independent variables systematically.
+3.  **Data Collection:** Capture metrics for each batch.
+4.  **Analysis:** Plot trade-off curves (e.g., throughput vs. latency).
+
+---
+
+## 4. Research Timeline
+
+- **Project Phases:** Initiation, Architecture Design, Implementation, Experiments/Benchmarking, Data Analysis, Documentation.
+- **Milestones:** Proposal Submission, Prototype Deployment, Complete Experiments, Final Report.
+- **Workload:** Estimated 2,240 hours total (approx. 560 hours per member).
+
+---
+
+## 5. Feasibility and Conclusion
+
+### Feasibility
+
+- **Technical:** Uses established tools (Solidity, Node.js, Circom, EIP-4844). Modular design allows flexibility.
+- **Resource:** Feasible with standard computational resources and open-source tools.
+- **Time:** 10-month timeline with buffers is realistic.
+
+### Conclusion
+
+This project aims to bridge the gap between theoretical ZK-Rollup scalability and practical performance. By building a modular prototype and conducting rigorous experiments, we will provide actionable insights into optimizing batching, sequencing, and data availability. The open-source artifacts will support future research and education in the blockchain domain.
+
+### Future Work
+
+- Integration of zkEVM for general-purpose smart contracts.
+- Decentralized sequencer designs.
+- Economic analysis of fee mechanisms.
+
+---
+
+## References
+
+_(Selected references from proposal)_
+
+- [1] A. I. Sanka and R. C. Cheung, “A systematic review of blockchain scalability...”
+- [2] S. Nakamoto, “Bitcoin: A peer-to-peer electronic cash system,” 2008.
+- [3] V. Buterin, “Ethereum: A next-generation smart contract...”
+- [58] S. Chaliasos et al., “Analyzing and benchmarking zk-rollups,” 2024.
+- [62] Matter Labs, “ZKsync Docs,” 2025.
+- [63] StarkWare Industries, “Starknet Documentation,” 2025.
+- [66] Celestia, “How Celestia works,” 2025.
